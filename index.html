@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐼 熊猫识字岛 · 一年级</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box;
+      font-family:'Comic Sans MS','幼圆','Yuanti SC',sans-serif; }
+  body {
+    min-height:100vh;
+    background:linear-gradient(160deg,#a8d8ea 0%,#d4e9f7 40%,#ffe8d0 100%);
+    display:flex; justify-content:center; align-items:center; padding:12px;
+  }
+  .game {
+    width:100%; max-width:760px; background:#fffdf7;
+    border-radius:44px; padding:18px 18px 24px;
+    border:4px solid #7fb8d9;
+    box-shadow:0 18px 30px rgba(60,120,160,.2);
+    position:relative; overflow:hidden;
+  }
+
+  /* 顶部栏 */
+  .topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    background:#e3f0fa; padding:8px 14px; border-radius:32px;
+    margin-bottom:12px; border:2px solid #9cc7e3; color:#2c6a8f;
+    font-weight:bold; font-size:.9rem; flex-wrap:wrap; gap:5px;
+  }
+  .topbar > div { background:#ffffffcc; padding:4px 11px; border-radius:22px; }
+
+  /* 关卡地图 */
+  .map-screen { text-align:center; }
+  .map-title { font-size:1.5rem; color:#2c6a8f; margin-bottom:8px; }
+  .map-sub { font-size:.95rem; color:#5a8aa8; margin-bottom:16px; }
+  .islands {
+    display:grid; grid-template-columns:repeat(2,1fr); gap:14px;
+    margin-bottom:14px;
+  }
+  .island {
+    background:linear-gradient(145deg,#e8f4fd,#d0e7f7);
+    border:3px solid #9cc7e3; border-radius:32px; padding:16px 10px;
+    cursor:pointer; transition:.15s; position:relative;
+    box-shadow:0 6px 0 #9cc7e3;
+  }
+  .island:hover:not(.locked) { transform:translateY(-3px); box-shadow:0 9px 0 #9cc7e3; }
+  .island:active:not(.locked) { transform:translateY(3px); box-shadow:0 3px 0 #9cc7e3; }
+  .island.locked { opacity:.55; cursor:not-allowed; filter:grayscale(.5); }
+  .island-emoji { font-size:2.6rem; }
+  .island-name { font-size:1.1rem; font-weight:bold; color:#2c6a8f; margin-top:4px; }
+  .island-info { font-size:.8rem; color:#5a8aa8; margin-top:2px; }
+  .island-stars { font-size:1rem; margin-top:4px; letter-spacing:2px; }
+
+  /* 游戏屏幕 */
+  .game-screen { display:none; }
+  .game-screen.active { display:block; }
+  .map-screen.hidden { display:none; }
+
+  .back-btn {
+    background:#e3f0fa; border:2px solid #9cc7e3; border-radius:20px;
+    padding:5px 14px; font-size:.85rem; font-weight:bold; color:#2c6a8f;
+    cursor:pointer; margin-bottom:10px;
+  }
+  .back-btn:hover { background:#d0e7f7; }
+
+  /* 进度条 */
+  .progress-wrap {
+    background:#e3f0fa; border-radius:20px; height:22px;
+    margin-bottom:12px; overflow:hidden; border:2px solid #9cc7e3;
+    position:relative;
+  }
+  .progress-bar {
+    height:100%; background:linear-gradient(90deg,#7fb8d9,#5a9bc0);
+    width:0%; transition:.4s; border-radius:18px;
+  }
+  .progress-text {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.8rem; font-weight:bold; color:#1e4a66;
+  }
+
+  /* 熊猫伙伴 */
+  .panda-area {
+    display:flex; align-items:center; gap:12px; margin-bottom:12px;
+    background:#fff3e6; border-radius:32px; padding:10px 14px;
+    border:2px dashed #ffcfae;
+  }
+  .panda-face {
+    font-size:3rem; transition:.2s; flex-shrink:0;
+  }
+  .panda-face.happy { animation:jump .5s ease; }
+  .panda-face.sad { animation:shake .4s ease; }
+  @keyframes jump {
+    0%,100%{transform:translateY(0) scale(1);}
+    30%{transform:translateY(-14px) scale(1.15);}
+    60%{transform:translateY(-4px) scale(1.05);}
+  }
+  @keyframes shake {
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-6px) rotate(-5deg);}
+    75%{transform:translateX(6px) rotate(5deg);}
+  }
+  .panda-says {
+    background:#fff; border-radius:22px; padding:8px 14px;
+    font-size:.98rem; color:#784b2e; font-weight:600;
+    position:relative; flex:1; min-height:2.6rem;
+    display:flex; align-items:center;
+  }
+  .panda-says::before {
+    content:''; position:absolute; left:-8px; top:50%;
+    transform:translateY(-50%);
+    border:8px solid transparent; border-right-color:#fff;
+  }
+
+  /* 看字区 */
+  .char-area {
+    background:#fff; border-radius:36px; padding:14px;
+    margin-bottom:12px; text-align:center;
+    border:3px solid #ffcfae;
+    box-shadow:inset 0 -3px 0 #fff3e6;
+  }
+  .big-char {
+    font-size:6rem; line-height:1.1; color:#5e3a2b;
+    font-family:'楷体','KaiTi','STKaiti',serif; font-weight:700;
+    text-shadow:5px 5px 0 #f5d5bd; letter-spacing:6px;
+  }
+  .char-actions {
+    display:flex; justify-content:center; align-items:center;
+    gap:10px; margin-top:8px; flex-wrap:wrap;
+  }
+  .speaker {
+    background:#ffd36e; border:none; border-radius:50%;
+    width:54px; height:54px; font-size:1.6rem; cursor:pointer;
+    box-shadow:0 5px 0 #c9932b; transition:.05s;
+  }
+  .speaker:active { transform:translateY(5px); box-shadow:0 0 0 #c9932b; }
+  .iknow-btn {
+    background:#c8e6c9; border:2px solid #66bb6a; border-radius:26px;
+    padding:9px 20px; font-size:.95rem; font-weight:bold; color:#2e7d32;
+    cursor:pointer; box-shadow:0 4px 0 #4e9a4e; transition:.05s;
+  }
+  .iknow-btn:hover:not(:disabled) { background:#d7efd8; transform:translateY(-2px); box-shadow:0 6px 0 #4e9a4e; }
+  .iknow-btn:active:not(:disabled) { transform:translateY(3px); box-shadow:0 1px 0 #4e9a4e; }
+  .iknow-btn:disabled { opacity:.5; cursor:default; }
+
+  /* 词语选项 */
+  .word-options { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:12px; }
+  .word-btn {
+    background:#fff; border:3px solid #7fb8d9; border-radius:32px;
+    padding:14px 6px; font-size:1.4rem; font-weight:700; color:#1e4a66;
+    cursor:pointer; box-shadow:0 6px 0 #5a9bc0; transition:.05s;
+    font-family:'楷体','KaiTi','STKaiti',serif;
+  }
+  .word-btn:hover:not(:disabled) { background:#eaf5fc; transform:translateY(-2px); box-shadow:0 8px 0 #5a9bc0; }
+  .word-btn:active:not(:disabled) { transform:translateY(4px); box-shadow:0 2px 0 #5a9bc0; }
+  .word-btn.correct { background:#b1e6b1; border-color:#4e9a4e; box-shadow:0 4px 0 #347834; color:#1d4d1d; }
+  .word-btn.wrong { background:#f8b5b5; border-color:#b64545; box-shadow:0 4px 0 #8a3535; color:#5e1f1f; }
+  .word-btn:disabled { cursor:default; opacity:.93; }
+
+  /* 连击提示 */
+  .combo-pop {
+    position:fixed; top:30%; left:50%; transform:translate(-50%,-50%);
+    font-size:3rem; font-weight:bold; color:#ff6b35;
+    text-shadow:3px 3px 0 #fff, 5px 5px 0 #ffb347;
+    pointer-events:none; opacity:0; z-index:99;
+  }
+  .combo-pop.show { animation:comboAnim .9s ease; }
+  @keyframes comboAnim {
+    0%{opacity:0; transform:translate(-50%,-50%) scale(.4);}
+    30%{opacity:1; transform:translate(-50%,-50%) scale(1.2);}
+    70%{opacity:1; transform:translate(-50%,-80%) scale(1);}
+    100%{opacity:0; transform:translate(-50%,-120%) scale(.9);}
+  }
+
+  /* 反馈 */
+  .feedback {
+    text-align:center; font-size:1.1rem; font-weight:600; min-height:3rem;
+    background:#fff3e6; padding:9px; border-radius:30px; color:#7b4a2e;
+    margin-bottom:10px; line-height:1.5;
+  }
+  .next {
+    width:100%; background:#ffb347; border:none; border-radius:40px;
+    padding:13px; font-size:1.4rem; font-weight:bold; color:#422b1b;
+    cursor:pointer; box-shadow:0 7px 0 #b16f2c; letter-spacing:3px;
+    border:2px solid #ffe5b4; transition:.05s;
+  }
+  .next:hover:not(:disabled) { background:#ffbb5c; transform:translateY(-2px); box-shadow:0 9px 0 #b16f2c; }
+  .next:active:not(:disabled) { transform:translateY(5px); box-shadow:0 2px 0 #b16f2c; }
+  .next:disabled { opacity:.5; cursor:not-allowed; }
+
+  /* 通关弹窗 */
+  .modal-mask {
+    position:fixed; inset:0; background:rgba(0,0,0,.45);
+    display:none; justify-content:center; align-items:center; z-index:100;
+    padding:20px;
+  }
+  .modal-mask.show { display:flex; }
+  .modal {
+    background:#fffdf7; border-radius:40px; padding:26px 22px;
+    max-width:420px; width:100%; text-align:center;
+    border:4px solid #ffb88c; animation:popIn .3s ease;
+  }
+  @keyframes popIn { from{transform:scale(.7);opacity:0;} to{transform:scale(1);opacity:1;} }
+  .modal-emoji { font-size:4rem; }
+  .modal-title { font-size:1.6rem; color:#b45f3a; margin:8px 0; }
+  .modal-text { font-size:1rem; color:#784b2e; margin-bottom:16px; line-height:1.6; }
+  .modal-btn {
+    background:#ffb347; border:none; border-radius:30px;
+    padding:12px 30px; font-size:1.2rem; font-weight:bold; color:#422b1b;
+    cursor:pointer; box-shadow:0 6px 0 #b16f2c; margin:4px;
+  }
+  .modal-btn:active { transform:translateY(5px); box-shadow:0 1px 0 #b16f2c; }
+
+  @media(max-width:520px){
+    .big-char{font-size:4.5rem;}
+    .word-btn{font-size:1.15rem;padding:12px 4px;}
+    .island-emoji{font-size:2rem;}
+    .island-name{font-size:.95rem;}
+    .panda-face{font-size:2.4rem;}
+    .panda-says{font-size:.85rem;}
+  }
+</style>
+</head>
+<body>
+<div class="game">
+
+  <!-- 顶部栏 -->
+  <div class="topbar">
+    <div>⭐ 得分: <span id="score">0</span></div>
+    <div>🪙 金币: <span id="coins">0</span></div>
+    <div>🔥 连击: <span id="combo">0</span></div>
+  </div>
+
+  <!-- ========== 关卡地图 ========== -->
+  <div class="map-screen" id="mapScreen">
+    <div class="map-title">🐼 熊猫识字岛</div>
+    <div class="map-sub">选一个岛，开始认字冒险吧！</div>
+    <div class="islands" id="islands"></div>
+  </div>
+
+  <!-- ========== 游戏屏幕 ========== -->
+  <div class="game-screen" id="gameScreen">
+    <button class="back-btn" id="backBtn">⬅ 返回地图</button>
+
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progressBar"></div>
+      <div class="progress-text" id="progressText">0 / 50</div>
+    </div>
+
+    <!-- 熊猫伙伴 -->
+    <div class="panda-area">
+      <div class="panda-face" id="pandaFace">🐼</div>
+      <div class="panda-says" id="pandaSays">先自己读一读这个字吧！</div>
+    </div>
+
+    <!-- 看字区 -->
+    <div class="char-area">
+      <div class="big-char" id="charDisplay">小</div>
+      <div class="char-actions">
+        <button class="speaker" id="speakBtn" title="点我听读音">🔊</button>
+        <button class="iknow-btn" id="iKnowBtn">✅ 我读对了</button>
+      </div>
+    </div>
+
+    <!-- 词语选项 -->
+    <div class="word-options" id="wordOptions"></div>
+
+    <div class="feedback" id="feedback">哪个词语里有这个字？</div>
+    <button class="next" id="nextBtn" disabled>➡️ 下一个字</button>
+  </div>
+</div>
+
+<!-- 连击弹出 -->
+<div class="combo-pop" id="comboPop"></div>
+
+<!-- 通关弹窗 -->
+<div class="modal-mask" id="modalMask">
+  <div class="modal">
+    <div class="modal-emoji" id="modalEmoji">🎉</div>
+    <div class="modal-title" id="modalTitle">通关啦！</div>
+    <div class="modal-text" id="modalText"></div>
+    <button class="modal-btn" id="modalBtn">继续冒险</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ★★★ 字库（200字，按4个岛分组）★★★
+   每字格式：{char:'字', pinyin:'拼音', word:'正确词语', wrong:['干扰1','干扰2','干扰3']}
+   想加字？照着上面格式加一行就行，不用改代码逻辑。
+   ============================================================ */
+
+/* ---- 岛1：森林小岛（基础独体字 50个）---- */
+var island1 = [
+  {char:'小',pinyin:'xiǎo',word:'大小',wrong:['河水','火车','高山']},
+  {char:'水',pinyin:'shuǐ',word:'喝水',wrong:['大树','太阳','石头']},
+  {char:'火',pinyin:'huǒ',word:'火车',wrong:['白云','小鸟','金鱼']},
+  {char:'山',pinyin:'shān',word:'高山',wrong:['月亮','小手','耳朵']},
+  {char:'日',pinyin:'rì',word:'日出',wrong:['大树','泥土','嘴巴']},
+  {char:'月',pinyin:'yuè',word:'月亮',wrong:['火车','石头','小鸟']},
+  {char:'大',pinyin:'dà',word:'大人',wrong:['小鸟','河水','月亮']},
+  {char:'人',pinyin:'rén',word:'人们',wrong:['高山','火车','白云']},
+  {char:'上',pinyin:'shàng',word:'上面',wrong:['小鸟','泥土','大树']},
+  {char:'下',pinyin:'xià',word:'下面',wrong:['月亮','石头','金鱼']},
+  {char:'中',pinyin:'zhōng',word:'中间',wrong:['白云','火车','耳朵']},
+  {char:'天',pinyin:'tiān',word:'天空',wrong:['石头','小手','大树']},
+  {char:'地',pinyin:'dì',word:'大地',wrong:['小鸟','月亮','嘴巴']},
+  {char:'木',pinyin:'mù',word:'木头',wrong:['河水','太阳','耳朵']},
+  {char:'禾',pinyin:'hé',word:'禾苗',wrong:['火车','石头','小手']},
+  {char:'口',pinyin:'kǒu',word:'开口',wrong:['大树','白云','金鱼']},
+  {char:'耳',pinyin:'ěr',word:'耳朵',wrong:['火车','月亮','高山']},
+  {char:'手',pinyin:'shǒu',word:'小手',wrong:['河水','太阳','石头']},
+  {char:'女',pinyin:'nǚ',word:'女孩',wrong:['火车','大树','白云']},
+  {char:'子',pinyin:'zǐ',word:'孩子',wrong:['高山','金鱼','月亮']},
+  {char:'田',pinyin:'tián',word:'田地',wrong:['小鸟','火车','耳朵']},
+  {char:'土',pinyin:'tǔ',word:'泥土',wrong:['月亮','大手','白云']},
+  {char:'石',pinyin:'shí',word:'石头',wrong:['河水','小鸟','太阳']},
+  {char:'目',pinyin:'mù',word:'目光',wrong:['火车','大树','金鱼']},
+  {char:'白',pinyin:'bái',word:'白云',wrong:['火车','石头','小手']},
+  {char:'云',pinyin:'yún',word:'白云',wrong:['大树','河水','耳朵']},
+  {char:'雨',pinyin:'yǔ',word:'下雨',wrong:['火车','太阳','小鸟']},
+  {char:'风',pinyin:'fēng',word:'大风',wrong:['石头','月亮','嘴巴']},
+  {char:'花',pinyin:'huā',word:'花朵',wrong:['火车','河水','耳朵']},
+  {char:'草',pinyin:'cǎo',word:'小草',wrong:['太阳','石头','小手']},
+  {char:'树',pinyin:'shù',word:'大树',wrong:['河水','月亮','嘴巴']},
+  {char:'鸟',pinyin:'niǎo',word:'小鸟',wrong:['石头','火车','耳朵']},
+  {char:'鱼',pinyin:'yú',word:'金鱼',wrong:['大树','月亮','小手']},
+  {char:'马',pinyin:'mǎ',word:'小马',wrong:['河水','石头','白云']},
+  {char:'牛',pinyin:'niú',word:'黄牛',wrong:['火车','月亮','嘴巴']},
+  {char:'羊',pinyin:'yáng',word:'山羊',wrong:['大树','河水','耳朵']},
+  {char:'虫',pinyin:'chóng',word:'小虫',wrong:['太阳','石头','小手']},
+  {char:'门',pinyin:'mén',word:'大门',wrong:['河水','月亮','小鸟']},
+  {char:'我',pinyin:'wǒ',word:'我们',wrong:['大树','石头','耳朵']},
+  {char:'你',pinyin:'nǐ',word:'你好',wrong:['火车','河水','嘴巴']},
+  {char:'他',pinyin:'tā',word:'他们',wrong:['月亮','石头','小手']},
+  {char:'朋',pinyin:'péng',word:'朋友',wrong:['大树','河水','耳朵']},
+  {char:'友',pinyin:'yǒu',word:'朋友',wrong:['火车','月亮','嘴巴']},
+  {char:'学',pinyin:'xué',word:'学习',wrong:['石头','河水','小鸟']},
+  {char:'生',pinyin:'shēng',word:'学生',wrong:['大树','月亮','耳朵']},
+  {char:'老',pinyin:'lǎo',word:'老师',wrong:['火车','河水','嘴巴']},
+  {char:'师',pinyin:'shī',word:'老师',wrong:['石头','月亮','小手']},
+  {char:'同',pinyin:'tóng',word:'同学',wrong:['大树','河水','耳朵']},
+  {char:'家',pinyin:'jiā',word:'大家',wrong:['火车','石头','小鸟']},
+  {char:'看',pinyin:'kàn',word:'看见',wrong:['月亮','河水','嘴巴']},
+  {char:'听',pinyin:'tīng',word:'听见',wrong:['大树','石头','小手']}
+];
+
+/* ---- 岛2：数学王国（数学读题字 50个）---- */
+var island2 = [
+  {char:'个',pinyin:'gè',word:'一个',wrong:['河水','火车','耳朵']},
+  {char:'只',pinyin:'zhī',word:'一只',wrong:['大树','月亮','嘴巴']},
+  {char:'朵',pinyin:'duǒ',word:'一朵',wrong:['火车','河水','石头']},
+  {char:'条',pinyin:'tiáo',word:'一条',wrong:['大树','月亮','耳朵']},
+  {char:'本',pinyin:'běn',word:'一本',wrong:['河水','石头','小鸟']},
+  {char:'支',pinyin:'zhī',word:'一支',wrong:['大树','月亮','嘴巴']},
+  {char:'块',pinyin:'kuài',word:'一块',wrong:['火车','河水','耳朵']},
+  {char:'加',pinyin:'jiā',word:'加法',wrong:['大树','月亮','小鸟']},
+  {char:'减',pinyin:'jiǎn',word:'减法',wrong:['河水','石头','嘴巴']},
+  {char:'比',pinyin:'bǐ',word:'比一比',wrong:['火车','月亮','耳朵']},
+  {char:'多',pinyin:'duō',word:'多少',wrong:['大树','河水','小手']},
+  {char:'少',pinyin:'shǎo',word:'多少',wrong:['火车','石头','小鸟']},
+  {char:'长',pinyin:'cháng',word:'长短',wrong:['月亮','河水','嘴巴']},
+  {char:'短',pinyin:'duǎn',word:'长短',wrong:['大树','石头','耳朵']},
+  {char:'高',pinyin:'gāo',word:'高低',wrong:['火车','河水','小手']},
+  {char:'一',pinyin:'yī',word:'一共',wrong:['大树','月亮','小鸟']},
+  {char:'共',pinyin:'gòng',word:'一共',wrong:['河水','石头','嘴巴']},
+  {char:'还',pinyin:'hái',word:'还剩',wrong:['火车','月亮','耳朵']},
+  {char:'剩',pinyin:'shèng',word:'还剩',wrong:['大树','河水','小手']},
+  {char:'平',pinyin:'píng',word:'平均',wrong:['火车','石头','小鸟']},
+  {char:'每',pinyin:'měi',word:'每天',wrong:['月亮','河水','嘴巴']},
+  {char:'左',pinyin:'zuǒ',word:'左边',wrong:['大树','石头','耳朵']},
+  {char:'右',pinyin:'yòu',word:'右边',wrong:['火车','河水','小手']},
+  {char:'前',pinyin:'qián',word:'前面',wrong:['大树','月亮','小鸟']},
+  {char:'后',pinyin:'hòu',word:'后面',wrong:['河水','石头','嘴巴']},
+  {char:'里',pinyin:'lǐ',word:'里面',wrong:['火车','月亮','耳朵']},
+  {char:'外',pinyin:'wài',word:'外面',wrong:['大树','河水','小手']},
+  {char:'元',pinyin:'yuán',word:'一元',wrong:['火车','石头','小鸟']},
+  {char:'角',pinyin:'jiǎo',word:'一角',wrong:['月亮','河水','嘴巴']},
+  {char:'钱',pinyin:'qián',word:'花钱',wrong:['大树','石头','耳朵']},
+  {char:'买',pinyin:'mǎi',word:'买书',wrong:['火车','月亮','小手']},
+  {char:'第',pinyin:'dì',word:'第几',wrong:['河水','石头','小鸟']},
+  {char:'几',pinyin:'jǐ',word:'几个',wrong:['大树','月亮','嘴巴']},
+  {char:'数',pinyin:'shù',word:'数学',wrong:['火车','河水','耳朵']},
+  {char:'算',pinyin:'suàn',word:'计算',wrong:['大树','石头','小手']},
+  {char:'题',pinyin:'tí',word:'题目',wrong:['火车','月亮','小鸟']},
+  {char:'时',pinyin:'shí',word:'小时',wrong:['河水','石头','嘴巴']},
+  {char:'分',pinyin:'fēn',word:'分钟',wrong:['大树','月亮','耳朵']},
+  {char:'半',pinyin:'bàn',word:'一半',wrong:['火车','河水','小手']},
+  {char:'连',pinyin:'lián',word:'连线',wrong:['大树','月亮','嘴巴']},
+  {char:'填',pinyin:'tián',word:'填空',wrong:['火车','河水','耳朵']},
+  {char:'写',pinyin:'xiě',word:'写字',wrong:['大树','石头','小鸟']},
+  {char:'画',pinyin:'huà',word:'画画',wrong:['月亮','河水','嘴巴']},
+  {char:'圈',pinyin:'quān',word:'圆圈',wrong:['火车','石头','耳朵']},
+  {char:'排',pinyin:'pái',word:'排队',wrong:['大树','河水','小手']},
+  {char:'队',pinyin:'duì',word:'排队',wrong:['火车','月亮','小鸟']},
+  {char:'做',pinyin:'zuò',word:'做题',wrong:['河水','石头','嘴巴']},
+  {char:'法',pinyin:'fǎ',word:'方法',wrong:['大树','月亮','耳朵']},
+  {char:'式',pinyin:'shì',word:'算式',wrong:['火车','河水','小手']},
+  {char:'正',pinyin:'zhèng',word:'正确',wrong:['大树','石头','小鸟']},
+  {char:'确',pinyin:'què',word:'正确',wrong:['月亮','河水','嘴巴']}
+];
+
+/* ---- 岛3：四季乐园（课本常见字 50个）---- */
+var island3 = [
+  {char:'春',pinyin:'chūn',word:'春天',wrong:['火车','石头','耳朵']},
+  {char:'夏',pinyin:'xià',word:'夏天',wrong:['大树','河水','小手']},
+  {char:'秋',pinyin:'qiū',word:'秋天',wrong:['火车','月亮','小鸟']},
+  {char:'冬',pinyin:'dōng',word:'冬天',wrong:['河水','石头','嘴巴']},
+  {char:'东',pinyin:'dōng',word:'东方',wrong:['大树','月亮','耳朵']},
+  {char:'南',pinyin:'nán',word:'南方',wrong:['火车','河水','小手']},
+  {char:'西',pinyin:'xī',word:'西方',wrong:['大树','石头','小鸟']},
+  {char:'北',pinyin:'běi',word:'北方',wrong:['月亮','河水','嘴巴']},
+  {char:'江',pinyin:'jiāng',word:'长江',wrong:['火车','石头','耳朵']},
+  {char:'河',pinyin:'hé',word:'小河',wrong:['大树','月亮','小手']},
+  {char:'湖',pinyin:'hú',word:'湖水',wrong:['火车','石头','小鸟']},
+  {char:'海',pinyin:'hǎi',word:'大海',wrong:['河水','月亮','嘴巴']},
+  {char:'星',pinyin:'xīng',word:'星星',wrong:['大树','石头','耳朵']},
+  {char:'光',pinyin:'guāng',word:'阳光',wrong:['火车','河水','小手']},
+  {char:'明',pinyin:'míng',word:'明亮',wrong:['大树','月亮','小鸟']},
+  {char:'亮',pinyin:'liàng',word:'明亮',wrong:['河水','石头','嘴巴']},
+  {char:'红',pinyin:'hóng',word:'红色',wrong:['火车','月亮','耳朵']},
+  {char:'黄',pinyin:'huáng',word:'黄色',wrong:['大树','河水','小手']},
+  {char:'蓝',pinyin:'lán',word:'蓝色',wrong:['火车','石头','小鸟']},
+  {char:'绿',pinyin:'lǜ',word:'绿色',wrong:['月亮','河水','嘴巴']},
+  {char:'色',pinyin:'sè',word:'颜色',wrong:['大树','石头','耳朵']},
+  {char:'春',pinyin:'chūn',word:'春风',wrong:['火车','月亮','小手']},
+  {char:'果',pinyin:'guǒ',word:'水果',wrong:['大树','河水','小鸟']},
+  {char:'园',pinyin:'yuán',word:'公园',wrong:['火车','石头','嘴巴']},
+  {char:'公',pinyin:'gōng',word:'公园',wrong:['月亮','河水','耳朵']},
+  {char:'苹',pinyin:'píng',word:'苹果',wrong:['大树','石头','小手']},
+  {char:'桃',pinyin:'táo',word:'桃子',wrong:['火车','月亮','小鸟']},
+  {char:'梨',pinyin:'lí',word:'梨子',wrong:['河水','石头','嘴巴']},
+  {char:'糖',pinyin:'táng',word:'糖果',wrong:['大树','月亮','耳朵']},
+  {char:'蛋',pinyin:'dàn',word:'鸡蛋',wrong:['火车','河水','小手']},
+  {char:'糕',pinyin:'gāo',word:'蛋糕',wrong:['大树','石头','小鸟']},
+  {char:'爱',pinyin:'ài',word:'爱心',wrong:['月亮','河水','嘴巴']},
+  {char:'心',pinyin:'xīn',word:'爱心',wrong:['大树','石头','耳朵']},
+  {char:'快',pinyin:'kuài',word:'快乐',wrong:['火车','月亮','小手']},
+  {char:'乐',pinyin:'lè',word:'快乐',wrong:['河水','石头','小鸟']},
+  {char:'笑',pinyin:'xiào',word:'笑脸',wrong:['大树','月亮','嘴巴']},
+  {char:'哭',pinyin:'kū',word:'哭了',wrong:['火车','河水','耳朵']},
+  {char:'吃',pinyin:'chī',word:'吃饭',wrong:['大树','石头','小手']},
+  {char:'喝',pinyin:'hē',word:'喝水',wrong:['月亮','河水','小鸟']},
+  {char:'睡',pinyin:'shuì',word:'睡觉',wrong:['火车','石头','嘴巴']},
+  {char:'觉',pinyin:'jiào',word:'睡觉',wrong:['大树','月亮','耳朵']},
+  {char:'早',pinyin:'zǎo',word:'早上',wrong:['火车','河水','小手']},
+  {char:'晚',pinyin:'wǎn',word:'晚上',wrong:['大树','石头','小鸟']},
+  {char:'今',pinyin:'jīn',word:'今天',wrong:['月亮','河水','嘴巴']},
+  {char:'明',pinyin:'míng',word:'明天',wrong:['火车','石头','耳朵']},
+  {char:'年',pinyin:'nián',word:'今年',wrong:['大树','月亮','小手']},
+  {char:'岁',pinyin:'suì',word:'几岁',wrong:['河水','石头','小鸟']},
+  {char:'爸',pinyin:'bà',word:'爸爸',wrong:['火车','月亮','嘴巴']},
+  {char:'妈',pinyin:'mā',word:'妈妈',wrong:['大树','河水','耳朵']},
+  {char:'哥',pinyin:'gē',word:'哥哥',wrong:['火车','石头','小手']},
+  {char:'弟',pinyin:'dì',word:'弟弟',wrong:['月亮','河水','小鸟']}
+];
+
+/* ---- 岛4：挑战之岛（综合+进阶 50个）---- */
+var island4 = [
+  {char:'说',pinyin:'shuō',word:'说话',wrong:['火车','月亮','耳朵']},
+  {char:'走',pinyin:'zǒu',word:'走路',wrong:['河水','石头','小鸟']},
+  {char:'跑',pinyin:'pǎo',word:'跑步',wrong:['大树','月亮','嘴巴']},
+  {char:'飞',pinyin:'fēi',word:'飞机',wrong:['河水','石头','耳朵']},
+  {char:'车',pinyin:'chē',word:'火车',wrong:['大树','月亮','小手']},
+  {char:'船',pinyin:'chuán',word:'小船',wrong:['火车','河水','小鸟']},
+  {char:'路',pinyin:'lù',word:'马路',wrong:['大树','石头','嘴巴']},
+  {char:'桥',pinyin:'qiáo',word:'小桥',wrong:['月亮','河水','耳朵']},
+  {char:'房',pinyin:'fáng',word:'房子',wrong:['火车','石头','小手']},
+  {char:'屋',pinyin:'wū',word:'屋子',wrong:['大树','月亮','小鸟']},
+  {char:'桌',pinyin:'zhuō',word:'桌子',wrong:['河水','石头','嘴巴']},
+  {char:'椅',pinyin:'yǐ',word:'椅子',wrong:['火车','月亮','耳朵']},
+  {char:'床',pinyin:'chuáng',word:'小床',wrong:['大树','河水','小手']},
+  {char:'灯',pinyin:'dēng',word:'台灯',wrong:['火车','石头','小鸟']},
+  {char:'书',pinyin:'shū',word:'看书',wrong:['月亮','河水','嘴巴']},
+  {char:'笔',pinyin:'bǐ',word:'铅笔',wrong:['大树','石头','耳朵']},
+  {char:'纸',pinyin:'zhǐ',word:'白纸',wrong:['火车','月亮','小手']},
+  {char:'画',pinyin:'huà',word:'画画',wrong:['河水','石头','小鸟']},
+  {char:'歌',pinyin:'gē',word:'唱歌',wrong:['大树','月亮','嘴巴']},
+  {char:'舞',pinyin:'wǔ',word:'跳舞',wrong:['火车','河水','耳朵']},
+  {char:'球',pinyin:'qiú',word:'皮球',wrong:['大树','石头','小手']},
+  {char:'玩',pinyin:'wán',word:'玩耍',wrong:['月亮','河水','小鸟']},
+  {char:'笑',pinyin:'xiào',word:'微笑',wrong:['火车','石头','嘴巴']},
+  {char:'帮',pinyin:'bāng',word:'帮忙',wrong:['大树','月亮','耳朵']},
+  {char:'助',pinyin:'zhù',word:'帮助',wrong:['火车','河水','小手']},
+  {char:'谢',pinyin:'xiè',word:'谢谢',wrong:['大树','石头','小鸟']},
+  {char:'请',pinyin:'qǐng',word:'请问',wrong:['月亮','河水','嘴巴']},
+  {char:'对',pinyin:'duì',word:'对错',wrong:['火车','石头','耳朵']},
+  {char:'错',pinyin:'cuò',word:'对错',wrong:['大树','月亮','小手']},
+  {char:'真',pinyin:'zhēn',word:'认真',wrong:['河水','石头','小鸟']},
+  {char:'认',pinyin:'rèn',word:'认真',wrong:['火车','月亮','嘴巴']},
+  {char:'想',pinyin:'xiǎng',word:'想念',wrong:['大树','河水','耳朵']},
+  {char:'念',pinyin:'niàn',word:'想念',wrong:['火车','石头','小手']},
+  {char:'知',pinyin:'zhī',word:'知道',wrong:['月亮','河水','小鸟']},
+  {char:'道',pinyin:'dào',word:'知道',wrong:['大树','石头','嘴巴']},
+  {char:'会',pinyin:'huì',word:'会做',wrong:['火车','月亮','耳朵']},
+  {char:'能',pinyin:'néng',word:'能干',wrong:['大树','河水','小手']},
+  {char:'干',pinyin:'gàn',word:'能干',wrong:['火车','石头','小鸟']},
+  {char:'力',pinyin:'lì',word:'力气',wrong:['月亮','河水','嘴巴']},
+  {char:'气',pinyin:'qì',word:'力气',wrong:['大树','石头','耳朵']},
+  {char:'空',pinyin:'kōng',word:'天空',wrong:['火车','月亮','小手']},
+  {char:'间',pinyin:'jiān',word:'时间',wrong:['河水','石头','小鸟']},
+  {char:'田',pinyin:'tián',word:'田野',wrong:['大树','月亮','嘴巴']},
+  {char:'野',pinyin:'yě',word:'田野',wrong:['火车','河水','耳朵']},
+  {char:'森',pinyin:'sēn',word:'森林',wrong:['大树','石头','小手']},
+  {char:'林',pinyin:'lín',word:'森林',wrong:['月亮','河水','小鸟']},
+  {char:'美',pinyin:'měi',word:'美丽',wrong:['火车','石头','嘴巴']},
+  {char:'丽',pinyin:'lì',word:'美丽',wrong:['大树','月亮','耳朵']},
+  {char:'世',pinyin:'shì',word:'世界',wrong:['火车','河水','小手']},
+  {char:'界',pinyin:'jiè',word:'世界',wrong:['大树','石头','小鸟']},
+  {char:'祖',pinyin:'zǔ',word:'祖国',wrong:['月亮','河水','嘴巴']}
+];
+
+/* 岛配置 */
+var islands = [
+  {id:0, name:'森林小岛', emoji:'🌲', data:island1, need:0,  desc:'基础字'},
+  {id:1, name:'数学王国', emoji:'🔢', data:island2, need:1,  desc:'读题字'},
+  {id:2, name:'四季乐园', emoji:'🌸', data:island3, need:2,  desc:'课本字'},
+  {id:3, name:'挑战之岛', emoji:'🏔', data:island4, need:3,  desc:'进阶字'}
+];
+
+/* ============ 状态 ============ */
+var score=0, coins=0, combo=0, maxCombo=0;
+var best=0;
+var answered=false, hasReadSelf=false;
+var currentIsland=null;
+var currentQ=null;
+var islandQueue=[];     // 当前岛的题目队列（每字一次）
+var islandIndex=0;      // 当前第几个字
+var wrongQueue=[];
+var unlockedIslands=[0]; // 已解锁的岛
+var islandStars={};      // 每岛星星数
+
+var $=function(id){return document.getElementById(id);};
+var scoreEl=$('score'), coinsEl=$('coins'), comboEl=$('combo');
+var islandsEl=$('islands');
+var mapScreen=$('mapScreen'), gameScreen=$('gameScreen');
+var progressBar=$('progressBar'), progressText=$('progressText');
+var pandaFace=$('pandaFace'), pandaSays=$('pandaSays');
+var charDisplay=$('charDisplay');
+var speakBtn=$('speakBtn'), iKnowBtn=$('iKnowBtn');
+var wordOptionsEl=$('wordOptions');
+var feedbackEl=$('feedback'), nextBtn=$('nextBtn');
+var comboPop=$('comboPop');
+var modalMask=$('modalMask');
+
+/* 存档 */
+try{
+  var sv=localStorage.getItem('panda_game_v1');
+  if(sv){
+    var d=JSON.parse(sv);
+    best=d.best||0;
+    coins=d.coins||0;
+    unlockedIslands=d.unlocked||[0];
+    islandStars=d.stars||{};
+  }
+}catch(e){}
+
+function save(){
+  try{
+    localStorage.setItem('panda_game_v1', JSON.stringify({
+      best:best, coins:coins, unlocked:unlockedIslands, stars:islandStars
+    }));
+  }catch(e){}
+}
+
+/* 语音 */
+function speak(text){
+  if(!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(text);
+  u.lang='zh-CN'; u.rate=0.75; u.pitch=1.1;
+  window.speechSynthesis.speak(u);
+}
+
+/* 音效（用 Web Audio 合成，不需要外部文件） */
+function beep(type){
+  try{
+    var ctx=new (window.AudioContext||window.webkitAudioContext)();
+    var o=ctx.createOscillator();
+    var g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    if(type==='ok'){ o.frequency.value=880; o.type='sine'; g.gain.value=.1; o.start(); o.frequency.exponentialRampToValueAtTime(1320,ctx.currentTime+.15); o.stop(ctx.currentTime+.2); }
+    else if(type==='no'){ o.frequency.value=300; o.type='sawtooth'; g.gain.value=.08; o.start(); o.frequency.exponentialRampToValueAtTime(150,ctx.currentTime+.2); o.stop(ctx.currentTime+.25); }
+    else if(type==='coin'){ o.frequency.value=1200; o.type='square'; g.gain.value=.06; o.start(); o.frequency.exponentialRampToValueAtTime(1800,ctx.currentTime+.1); o.stop(ctx.currentTime+.15); }
+  }catch(e){}
+}
+
+/* 渲染关卡地图 */
+function renderMap(){
+  islandsEl.innerHTML='';
+  for(var i=0;i<islands.length;i++){
+    (function(isl){
+      var locked = unlockedIslands.indexOf(isl.id)===-1;
+      var stars = islandStars[isl.id]||0;
+      var div=document.createElement('div');
+      div.className='island'+(locked?' locked':'');
+      var starStr='';
+      for(var s=0;s<3;s++) starStr += (s<stars?'⭐':'☆');
+      div.innerHTML =
+        '<div class="island-emoji">'+isl.emoji+'</div>'+
+        '<div class="island-name">'+isl.name+'</div>'+
+        '<div class="island-info">'+isl.desc+' · '+isl.data.length+'字</div>'+
+        '<div class="island-stars">'+(locked?'🔒 未解锁':starStr)+'</div>';
+      if(!locked){
+        div.onclick=function(){ startIsland(isl); };
+      }
+      islandsEl.appendChild(div);
+    })(islands[i]);
+  }
+}
+
+/* 开始一个岛 */
+function startIsland(isl){
+  currentIsland=isl;
+  // 打乱题目顺序
+  islandQueue = isl.data.slice().sort(function(){return Math.random()-0.5;});
+  islandIndex=0;
+  wrongQueue=[];
+  mapScreen.classList.add('hidden');
+  gameScreen.classList.add('active');
+  updateProgress();
+  loadQuestion();
+}
+
+/* 更新进度条 */
+function updateProgress(){
+  var total=islandQueue.length;
+  var done=islandIndex;
+  var pct= total? (done/total*100):0;
+  progressBar.style.width=pct+'%';
+  progressText.textContent=done+' / '+total;
+}
+
+/* 出题 */
+function loadQuestion(){
+  answered=false;
+  hasReadSelf=false;
+  nextBtn.disabled=true;
+  iKnowBtn.disabled=false;
+
+  if(islandIndex>=islandQueue.length){
+    finishIsland();
+    return;
+  }
+
+  var q=islandQueue[islandIndex];
+  currentQ=q;
+
+  charDisplay.textContent=q.char;
+  pandaSays.textContent='先自己读一读，不会读再点喇叭～';
+  pandaFace.textContent='🐼';
+
+  var words=[q.word].concat(q.wrong);
+  words.sort(function(){return Math.random()-0.5;});
+
+  wordOptionsEl.innerHTML='';
+  for(var i=0;i<words.length;i++){
+    (function(w){
+      var b=document.createElement('button');
+      b.className='word-btn'; b.type='button'; b.textContent=w;
+      b.onclick=function(){ chooseWord(w,b); };
+      wordOptionsEl.appendChild(b);
+    })(words[i]);
+  }
+
+  feedbackEl.textContent='哪个词语里有这个字？';
+  feedbackEl.style.color='#7b4a2e';
+}
+
+/* 我读对了 */
+iKnowBtn.onclick=function(){
+  if(hasReadSelf||answered) return;
+  hasReadSelf=true;
+  iKnowBtn.disabled=true;
+  score+=2; scoreEl.textContent=score;
+  pandaFace.textContent='😊';
+  pandaSays.textContent='真棒！自己读出来了，+2分～';
+  beep('coin');
+};
+
+/* 选词语 */
+function chooseWord(word,btn){
+  if(answered) return;
+  answered=true;
+
+  var all=wordOptionsEl.querySelectorAll('.word-btn');
+  var ok=(word===currentQ.word);
+
+  if(ok){
+    combo++;
+    if(combo>maxCombo) maxCombo=combo;
+    var comboBonus = combo>=3 ? 5 : 0;
+    score += 10 + comboBonus;
+    coins += 1;
+    scoreEl.textContent=score;
+    coinsEl.textContent=coins;
+    comboEl.textContent=combo;
+
+    if(combo>=3){
+      comboPop.textContent='🔥 连击 x'+combo+'！';
+      comboPop.classList.remove('show');
+      void comboPop.offsetWidth;
+      comboPop.classList.add('show');
+    }
+
+    pandaFace.textContent='🥳';
+    pandaSays.textContent='太棒啦！"'+currentQ.char+'" 读 '+currentQ.pinyin+'，在"'+word+'"里！'+(comboBonus?' 连击+'+comboBonus:'');
+
+    feedbackEl.innerHTML='✅ 答对啦！<b>'+currentQ.char+'</b> 读 <b>'+currentQ.pinyin+'</b>，+10分'+(comboBonus?' 🔥连击+'+comboBonus:'');
+    feedbackEl.style.color='#2e7d32';
+    btn.classList.add('correct');
+    pandaFace.classList.add('happy');
+    setTimeout(function(){pandaFace.classList.remove('happy');},500);
+    beep('ok');
+    setTimeout(function(){speak(currentQ.char);},200);
+  }else{
+    combo=0;
+    comboEl.textContent=0;
+    pandaFace.textContent='😢';
+    pandaSays.textContent='再想想… "'+currentQ.char+'" 读 "'+currentQ.pinyin+'" 哦';
+    feedbackEl.innerHTML='❌ 再想想… <b>'+currentQ.char+'</b> 读 <b>'+currentQ.pinyin+'</b>，它在 <b>'+currentQ.word+'</b> 里';
+    feedbackEl.style.color='#b64545';
+    btn.classList.add('wrong');
+    pandaFace.classList.add('sad');
+    setTimeout(function(){pandaFace.classList.remove('sad');},400);
+    beep('no');
+    wrongQueue.push(currentQ);
+    setTimeout(function(){speak(currentQ.char);},200);
+  }
+
+  for(var i=0;i<all.length;i++){
+    all[i].disabled=true;
+    if(all[i].textContent===currentQ.word) all[i].classList.add('correct');
+  }
+  iKnowBtn.disabled=true;
+  nextBtn.disabled=false;
+  updateProgress();
+}
+
+/* 下一题 */
+nextBtn.onclick=function(){
+  if(!answered) return;
+  islandIndex++;
+  updateProgress();
+  loadQuestion();
+};
+
+speakBtn.onclick=function(){ if(currentQ) speak(currentQ.char); };
+
+/* 完成一个岛 */
+function finishIsland(){
+  // 计算星星：答对率
+  var total=islandQueue.length;
+  var wrongCount=wrongQueue.length;
+  var correctRate=(total-wrongCount)/total;
+  var stars=correctRate>=0.9?3:(correctRate>=0.7?2:1);
+
+  // 记录最高
+  if(!islandStars[currentIsland.id] || stars>islandStars[currentIsland.id]){
+    islandStars[currentIsland.id]=stars;
+  }
+
+  // 解锁下一个岛
+  var nextId=currentIsland.id+1;
+  if(nextId<islands.length && unlockedIslands.indexOf(nextId)===-1){
+    unlockedIslands.push(nextId);
+  }
+
+  if(score>best){best=score;}
+  save();
+
+  // 弹窗
+  var starStr='';
+  for(var s=0;s<3;s++) starStr += (s<stars?'⭐':'☆');
+  $('modalEmoji').textContent = stars===3?'🏆':(stars===2?'🎉':'💪');
+  $('modalTitle').textContent = stars===3?'完美通关！':(stars===2?'通关啦！':'完成啦！');
+  $('modalText').innerHTML =
+    '本岛获得 '+starStr+'<br>'+
+    '答对 '+(total-wrongCount)+' / '+total+' 个字<br>'+
+    '金币 +'+coins+' 🪙<br><br>'+
+    (nextId<islands.length?'🎁 已解锁新岛屿！':'🏝 所有岛屿都已解锁！');
+  modalMask.classList.add('show');
+}
+
+/* 弹窗按钮 */
+$('modalBtn').onclick=function(){
+  modalMask.classList.remove('show');
+  gameScreen.classList.remove('active');
+  mapScreen.classList.remove('hidden');
+  renderMap();
+};
+
+/* 返回地图 */
+$('backBtn').onclick=function(){
+  gameScreen.classList.remove('active');
+  mapScreen.classList.remove('hidden');
+  renderMap();
+};
+
+/* 启动 */
+renderMap();
+</script>
+</body>
+</html>
