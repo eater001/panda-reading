@@ -19,8 +19,6 @@
     box-shadow:0 18px 30px rgba(60,120,160,.2);
     position:relative; overflow:hidden;
   }
-
-  /* 顶部栏 */
   .topbar {
     display:flex; justify-content:space-between; align-items:center;
     background:#e3f0fa; padding:8px 14px; border-radius:32px;
@@ -29,7 +27,6 @@
   }
   .topbar > div { background:#ffffffcc; padding:4px 11px; border-radius:22px; }
 
-  /* 关卡地图 */
   .map-screen { text-align:center; }
   .map-title { font-size:1.5rem; color:#2c6a8f; margin-bottom:8px; }
   .map-sub { font-size:.95rem; color:#5a8aa8; margin-bottom:16px; }
@@ -50,8 +47,8 @@
   .island-name { font-size:1.1rem; font-weight:bold; color:#2c6a8f; margin-top:4px; }
   .island-info { font-size:.8rem; color:#5a8aa8; margin-top:2px; }
   .island-stars { font-size:1rem; margin-top:4px; letter-spacing:2px; }
+  .island-prog { font-size:.78rem; color:#e0932b; margin-top:3px; font-weight:bold; }
 
-  /* 游戏屏幕 */
   .game-screen { display:none; }
   .game-screen.active { display:block; }
   .map-screen.hidden { display:none; }
@@ -63,7 +60,6 @@
   }
   .back-btn:hover { background:#d0e7f7; }
 
-  /* 进度条 */
   .progress-wrap {
     background:#e3f0fa; border-radius:20px; height:22px;
     margin-bottom:12px; overflow:hidden; border:2px solid #9cc7e3;
@@ -79,7 +75,6 @@
     font-size:.8rem; font-weight:bold; color:#1e4a66;
   }
 
-  /* 熊猫伙伴 */
   .panda-area {
     display:flex; align-items:center; gap:12px; margin-bottom:12px;
     background:#fff3e6; border-radius:32px; padding:10px 14px;
@@ -112,7 +107,6 @@
     border:8px solid transparent; border-right-color:#fff;
   }
 
-  /* 看字区 */
   .char-area {
     background:#fff; border-radius:36px; padding:14px;
     margin-bottom:12px; text-align:center;
@@ -143,7 +137,6 @@
   .iknow-btn:active:not(:disabled) { transform:translateY(3px); box-shadow:0 1px 0 #4e9a4e; }
   .iknow-btn:disabled { opacity:.5; cursor:default; }
 
-  /* 词语选项 */
   .word-options { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:12px; }
   .word-btn {
     background:#fff; border:3px solid #7fb8d9; border-radius:32px;
@@ -157,7 +150,6 @@
   .word-btn.wrong { background:#f8b5b5; border-color:#b64545; box-shadow:0 4px 0 #8a3535; color:#5e1f1f; }
   .word-btn:disabled { cursor:default; opacity:.93; }
 
-  /* 连击提示 */
   .combo-pop {
     position:fixed; top:30%; left:50%; transform:translate(-50%,-50%);
     font-size:3rem; font-weight:bold; color:#ff6b35;
@@ -172,7 +164,6 @@
     100%{opacity:0; transform:translate(-50%,-120%) scale(.9);}
   }
 
-  /* 反馈 */
   .feedback {
     text-align:center; font-size:1.1rem; font-weight:600; min-height:3rem;
     background:#fff3e6; padding:9px; border-radius:30px; color:#7b4a2e;
@@ -188,7 +179,6 @@
   .next:active:not(:disabled) { transform:translateY(5px); box-shadow:0 2px 0 #b16f2c; }
   .next:disabled { opacity:.5; cursor:not-allowed; }
 
-  /* 通关弹窗 */
   .modal-mask {
     position:fixed; inset:0; background:rgba(0,0,0,.45);
     display:none; justify-content:center; align-items:center; z-index:100;
@@ -224,21 +214,18 @@
 <body>
 <div class="game">
 
-  <!-- 顶部栏 -->
   <div class="topbar">
     <div>⭐ 得分: <span id="score">0</span></div>
     <div>🪙 金币: <span id="coins">0</span></div>
     <div>🔥 连击: <span id="combo">0</span></div>
   </div>
 
-  <!-- ========== 关卡地图 ========== -->
   <div class="map-screen" id="mapScreen">
     <div class="map-title">🐼 熊猫识字岛</div>
     <div class="map-sub">选一个岛，开始认字冒险吧！</div>
     <div class="islands" id="islands"></div>
   </div>
 
-  <!-- ========== 游戏屏幕 ========== -->
   <div class="game-screen" id="gameScreen">
     <button class="back-btn" id="backBtn">⬅ 返回地图</button>
 
@@ -247,13 +234,11 @@
       <div class="progress-text" id="progressText">0 / 50</div>
     </div>
 
-    <!-- 熊猫伙伴 -->
     <div class="panda-area">
       <div class="panda-face" id="pandaFace">🐼</div>
       <div class="panda-says" id="pandaSays">先自己读一读这个字吧！</div>
     </div>
 
-    <!-- 看字区 -->
     <div class="char-area">
       <div class="big-char" id="charDisplay">小</div>
       <div class="char-actions">
@@ -262,7 +247,6 @@
       </div>
     </div>
 
-    <!-- 词语选项 -->
     <div class="word-options" id="wordOptions"></div>
 
     <div class="feedback" id="feedback">哪个词语里有这个字？</div>
@@ -270,10 +254,8 @@
   </div>
 </div>
 
-<!-- 连击弹出 -->
 <div class="combo-pop" id="comboPop"></div>
 
-<!-- 通关弹窗 -->
 <div class="modal-mask" id="modalMask">
   <div class="modal">
     <div class="modal-emoji" id="modalEmoji">🎉</div>
@@ -285,9 +267,7 @@
 
 <script>
 /* ============================================================
-   ★★★ 字库（200字，按4个岛分组）★★★
-   每字格式：{char:'字', pinyin:'拼音', word:'正确词语', wrong:['干扰1','干扰2','干扰3']}
-   想加字？照着上面格式加一行就行，不用改代码逻辑。
+   ★★★ 字库（200个不重复字，按4个岛分组）★★★
    ============================================================ */
 
 /* ---- 岛1：森林小岛（基础独体字 50个）---- */
@@ -423,7 +403,7 @@ var island3 = [
   {char:'蓝',pinyin:'lán',word:'蓝色',wrong:['火车','石头','小鸟']},
   {char:'绿',pinyin:'lǜ',word:'绿色',wrong:['月亮','河水','嘴巴']},
   {char:'色',pinyin:'sè',word:'颜色',wrong:['大树','石头','耳朵']},
-  {char:'春',pinyin:'chūn',word:'春风',wrong:['火车','月亮','小手']},
+  {char:'风',pinyin:'fēng',word:'春风',wrong:['火车','月亮','小手']},
   {char:'果',pinyin:'guǒ',word:'水果',wrong:['大树','河水','小鸟']},
   {char:'园',pinyin:'yuán',word:'公园',wrong:['火车','石头','嘴巴']},
   {char:'公',pinyin:'gōng',word:'公园',wrong:['月亮','河水','耳朵']},
@@ -446,16 +426,16 @@ var island3 = [
   {char:'早',pinyin:'zǎo',word:'早上',wrong:['火车','河水','小手']},
   {char:'晚',pinyin:'wǎn',word:'晚上',wrong:['大树','石头','小鸟']},
   {char:'今',pinyin:'jīn',word:'今天',wrong:['月亮','河水','嘴巴']},
-  {char:'明',pinyin:'míng',word:'明天',wrong:['火车','石头','耳朵']},
-  {char:'年',pinyin:'nián',word:'今年',wrong:['大树','月亮','小手']},
-  {char:'岁',pinyin:'suì',word:'几岁',wrong:['河水','石头','小鸟']},
-  {char:'爸',pinyin:'bà',word:'爸爸',wrong:['火车','月亮','嘴巴']},
-  {char:'妈',pinyin:'mā',word:'妈妈',wrong:['大树','河水','耳朵']},
-  {char:'哥',pinyin:'gē',word:'哥哥',wrong:['火车','石头','小手']},
-  {char:'弟',pinyin:'dì',word:'弟弟',wrong:['月亮','河水','小鸟']}
+  {char:'年',pinyin:'nián',word:'今年',wrong:['火车','石头','耳朵']},
+  {char:'岁',pinyin:'suì',word:'几岁',wrong:['大树','月亮','小手']},
+  {char:'爸',pinyin:'bà',word:'爸爸',wrong:['河水','石头','小鸟']},
+  {char:'妈',pinyin:'mā',word:'妈妈',wrong:['火车','月亮','嘴巴']},
+  {char:'哥',pinyin:'gē',word:'哥哥',wrong:['大树','河水','耳朵']},
+  {char:'弟',pinyin:'dì',word:'弟弟',wrong:['火车','石头','小手']},
+  {char:'姐',pinyin:'jiě',word:'姐姐',wrong:['月亮','河水','小鸟']}
 ];
 
-/* ---- 岛4：挑战之岛（综合+进阶 50个）---- */
+/* ---- 岛4：挑战之岛（进阶字 50个）---- */
 var island4 = [
   {char:'说',pinyin:'shuō',word:'说话',wrong:['火车','月亮','耳朵']},
   {char:'走',pinyin:'zǒu',word:'走路',wrong:['河水','石头','小鸟']},
@@ -474,48 +454,46 @@ var island4 = [
   {char:'书',pinyin:'shū',word:'看书',wrong:['月亮','河水','嘴巴']},
   {char:'笔',pinyin:'bǐ',word:'铅笔',wrong:['大树','石头','耳朵']},
   {char:'纸',pinyin:'zhǐ',word:'白纸',wrong:['火车','月亮','小手']},
-  {char:'画',pinyin:'huà',word:'画画',wrong:['河水','石头','小鸟']},
-  {char:'歌',pinyin:'gē',word:'唱歌',wrong:['大树','月亮','嘴巴']},
-  {char:'舞',pinyin:'wǔ',word:'跳舞',wrong:['火车','河水','耳朵']},
-  {char:'球',pinyin:'qiú',word:'皮球',wrong:['大树','石头','小手']},
-  {char:'玩',pinyin:'wán',word:'玩耍',wrong:['月亮','河水','小鸟']},
-  {char:'笑',pinyin:'xiào',word:'微笑',wrong:['火车','石头','嘴巴']},
-  {char:'帮',pinyin:'bāng',word:'帮忙',wrong:['大树','月亮','耳朵']},
-  {char:'助',pinyin:'zhù',word:'帮助',wrong:['火车','河水','小手']},
-  {char:'谢',pinyin:'xiè',word:'谢谢',wrong:['大树','石头','小鸟']},
-  {char:'请',pinyin:'qǐng',word:'请问',wrong:['月亮','河水','嘴巴']},
-  {char:'对',pinyin:'duì',word:'对错',wrong:['火车','石头','耳朵']},
-  {char:'错',pinyin:'cuò',word:'对错',wrong:['大树','月亮','小手']},
-  {char:'真',pinyin:'zhēn',word:'认真',wrong:['河水','石头','小鸟']},
-  {char:'认',pinyin:'rèn',word:'认真',wrong:['火车','月亮','嘴巴']},
-  {char:'想',pinyin:'xiǎng',word:'想念',wrong:['大树','河水','耳朵']},
-  {char:'念',pinyin:'niàn',word:'想念',wrong:['火车','石头','小手']},
-  {char:'知',pinyin:'zhī',word:'知道',wrong:['月亮','河水','小鸟']},
-  {char:'道',pinyin:'dào',word:'知道',wrong:['大树','石头','嘴巴']},
-  {char:'会',pinyin:'huì',word:'会做',wrong:['火车','月亮','耳朵']},
-  {char:'能',pinyin:'néng',word:'能干',wrong:['大树','河水','小手']},
-  {char:'干',pinyin:'gàn',word:'能干',wrong:['火车','石头','小鸟']},
-  {char:'力',pinyin:'lì',word:'力气',wrong:['月亮','河水','嘴巴']},
-  {char:'气',pinyin:'qì',word:'力气',wrong:['大树','石头','耳朵']},
-  {char:'空',pinyin:'kōng',word:'天空',wrong:['火车','月亮','小手']},
-  {char:'间',pinyin:'jiān',word:'时间',wrong:['河水','石头','小鸟']},
-  {char:'田',pinyin:'tián',word:'田野',wrong:['大树','月亮','嘴巴']},
-  {char:'野',pinyin:'yě',word:'田野',wrong:['火车','河水','耳朵']},
-  {char:'森',pinyin:'sēn',word:'森林',wrong:['大树','石头','小手']},
-  {char:'林',pinyin:'lín',word:'森林',wrong:['月亮','河水','小鸟']},
-  {char:'美',pinyin:'měi',word:'美丽',wrong:['火车','石头','嘴巴']},
-  {char:'丽',pinyin:'lì',word:'美丽',wrong:['大树','月亮','耳朵']},
-  {char:'世',pinyin:'shì',word:'世界',wrong:['火车','河水','小手']},
-  {char:'界',pinyin:'jiè',word:'世界',wrong:['大树','石头','小鸟']},
-  {char:'祖',pinyin:'zǔ',word:'祖国',wrong:['月亮','河水','嘴巴']}
+  {char:'歌',pinyin:'gē',word:'唱歌',wrong:['河水','石头','小鸟']},
+  {char:'舞',pinyin:'wǔ',word:'跳舞',wrong:['大树','月亮','嘴巴']},
+  {char:'球',pinyin:'qiú',word:'皮球',wrong:['火车','河水','耳朵']},
+  {char:'玩',pinyin:'wán',word:'玩耍',wrong:['大树','石头','小手']},
+  {char:'帮',pinyin:'bāng',word:'帮忙',wrong:['月亮','河水','小鸟']},
+  {char:'助',pinyin:'zhù',word:'帮助',wrong:['火车','石头','嘴巴']},
+  {char:'谢',pinyin:'xiè',word:'谢谢',wrong:['大树','月亮','耳朵']},
+  {char:'请',pinyin:'qǐng',word:'请问',wrong:['火车','河水','小手']},
+  {char:'对',pinyin:'duì',word:'对错',wrong:['大树','石头','小鸟']},
+  {char:'错',pinyin:'cuò',word:'对错',wrong:['月亮','河水','嘴巴']},
+  {char:'真',pinyin:'zhēn',word:'认真',wrong:['火车','石头','耳朵']},
+  {char:'认',pinyin:'rèn',word:'认真',wrong:['大树','月亮','小手']},
+  {char:'想',pinyin:'xiǎng',word:'想念',wrong:['河水','石头','小鸟']},
+  {char:'念',pinyin:'niàn',word:'想念',wrong:['火车','月亮','嘴巴']},
+  {char:'知',pinyin:'zhī',word:'知道',wrong:['大树','河水','耳朵']},
+  {char:'道',pinyin:'dào',word:'知道',wrong:['火车','石头','小手']},
+  {char:'会',pinyin:'huì',word:'会做',wrong:['月亮','河水','小鸟']},
+  {char:'能',pinyin:'néng',word:'能干',wrong:['大树','石头','嘴巴']},
+  {char:'干',pinyin:'gàn',word:'能干',wrong:['火车','月亮','耳朵']},
+  {char:'力',pinyin:'lì',word:'力气',wrong:['大树','河水','小手']},
+  {char:'气',pinyin:'qì',word:'力气',wrong:['火车','石头','小鸟']},
+  {char:'空',pinyin:'kōng',word:'天空',wrong:['月亮','河水','嘴巴']},
+  {char:'间',pinyin:'jiān',word:'时间',wrong:['大树','石头','耳朵']},
+  {char:'野',pinyin:'yě',word:'田野',wrong:['火车','月亮','小手']},
+  {char:'森',pinyin:'sēn',word:'森林',wrong:['河水','石头','小鸟']},
+  {char:'林',pinyin:'lín',word:'森林',wrong:['大树','月亮','嘴巴']},
+  {char:'美',pinyin:'měi',word:'美丽',wrong:['火车','河水','耳朵']},
+  {char:'丽',pinyin:'lì',word:'美丽',wrong:['大树','石头','小手']},
+  {char:'世',pinyin:'shì',word:'世界',wrong:['月亮','河水','小鸟']},
+  {char:'界',pinyin:'jiè',word:'世界',wrong:['火车','石头','嘴巴']},
+  {char:'祖',pinyin:'zǔ',word:'祖国',wrong:['大树','月亮','耳朵']},
+  {char:'国',pinyin:'guó',word:'祖国',wrong:['火车','河水','小手']},
+  {char:'窝',pinyin:'wō',word:'鸟窝',wrong:['大树','河水','嘴巴']}
 ];
 
-/* 岛配置 */
 var islands = [
-  {id:0, name:'森林小岛', emoji:'🌲', data:island1, need:0,  desc:'基础字'},
-  {id:1, name:'数学王国', emoji:'🔢', data:island2, need:1,  desc:'读题字'},
-  {id:2, name:'四季乐园', emoji:'🌸', data:island3, need:2,  desc:'课本字'},
-  {id:3, name:'挑战之岛', emoji:'🏔', data:island4, need:3,  desc:'进阶字'}
+  {id:0, name:'森林小岛', emoji:'🌲', data:island1, desc:'基础字'},
+  {id:1, name:'数学王国', emoji:'🔢', data:island2, desc:'读题字'},
+  {id:2, name:'四季乐园', emoji:'🌸', data:island3, desc:'课本字'},
+  {id:3, name:'挑战之岛', emoji:'🏔', data:island4, desc:'进阶字'}
 ];
 
 /* ============ 状态 ============ */
@@ -524,11 +502,12 @@ var best=0;
 var answered=false, hasReadSelf=false;
 var currentIsland=null;
 var currentQ=null;
-var islandQueue=[];     // 当前岛的题目队列（每字一次）
-var islandIndex=0;      // 当前第几个字
+var islandQueue=[];
+var islandIndex=0;
 var wrongQueue=[];
-var unlockedIslands=[0]; // 已解锁的岛
-var islandStars={};      // 每岛星星数
+var unlockedIslands=[0];
+var islandStars={};
+var masteredChars={};   // ★ 每个岛已掌握的字 {0:['小','水'], 1:['个','只'], ...}
 
 var $=function(id){return document.getElementById(id);};
 var scoreEl=$('score'), coinsEl=$('coins'), comboEl=$('combo');
@@ -543,7 +522,6 @@ var feedbackEl=$('feedback'), nextBtn=$('nextBtn');
 var comboPop=$('comboPop');
 var modalMask=$('modalMask');
 
-/* 存档 */
 try{
   var sv=localStorage.getItem('panda_game_v1');
   if(sv){
@@ -552,18 +530,19 @@ try{
     coins=d.coins||0;
     unlockedIslands=d.unlocked||[0];
     islandStars=d.stars||{};
+    masteredChars=d.mastered||{};   // ★ 读取已掌握的字
   }
 }catch(e){}
 
 function save(){
   try{
     localStorage.setItem('panda_game_v1', JSON.stringify({
-      best:best, coins:coins, unlocked:unlockedIslands, stars:islandStars
+      best:best, coins:coins, unlocked:unlockedIslands,
+      stars:islandStars, mastered:masteredChars
     }));
   }catch(e){}
 }
 
-/* 语音 */
 function speak(text){
   if(!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
@@ -572,7 +551,6 @@ function speak(text){
   window.speechSynthesis.speak(u);
 }
 
-/* 音效（用 Web Audio 合成，不需要外部文件） */
 function beep(type){
   try{
     var ctx=new (window.AudioContext||window.webkitAudioContext)();
@@ -585,7 +563,7 @@ function beep(type){
   }catch(e){}
 }
 
-/* 渲染关卡地图 */
+/* 渲染地图 */
 function renderMap(){
   islandsEl.innerHTML='';
   for(var i=0;i<islands.length;i++){
@@ -596,11 +574,23 @@ function renderMap(){
       div.className='island'+(locked?' locked':'');
       var starStr='';
       for(var s=0;s<3;s++) starStr += (s<stars?'⭐':'☆');
+
+      // ★ 显示已掌握进度
+      var mastered = (masteredChars[isl.id]||[]).length;
+      var total = isl.data.length;
+      var progHtml = '';
+      if(mastered>0 && mastered<total){
+        progHtml = '<div class="island-prog">▶ 已会 '+mastered+'/'+total+' 字</div>';
+      }else if(mastered>=total && total>0){
+        progHtml = '<div class="island-prog">🎉 已全部掌握</div>';
+      }
+
       div.innerHTML =
         '<div class="island-emoji">'+isl.emoji+'</div>'+
         '<div class="island-name">'+isl.name+'</div>'+
-        '<div class="island-info">'+isl.desc+' · '+isl.data.length+'字</div>'+
-        '<div class="island-stars">'+(locked?'🔒 未解锁':starStr)+'</div>';
+        '<div class="island-info">'+isl.desc+' · '+total+'字</div>'+
+        '<div class="island-stars">'+(locked?'🔒 未解锁':starStr)+'</div>'+
+        progHtml;
       if(!locked){
         div.onclick=function(){ startIsland(isl); };
       }
@@ -609,11 +599,27 @@ function renderMap(){
   }
 }
 
-/* 开始一个岛 */
 function startIsland(isl){
   currentIsland=isl;
-  // 打乱题目顺序
-  islandQueue = isl.data.slice().sort(function(){return Math.random()-0.5;});
+
+  // ★ 过滤掉已掌握的字
+  var mastered = masteredChars[isl.id]||[];
+  var remaining = isl.data.filter(function(q){
+    return mastered.indexOf(q.char)===-1;
+  });
+
+  if(remaining.length===0){
+    // 全部掌握了，重新玩（清空已掌握，重新出题）
+    if(confirm('这个岛的字你都学会啦！\n要重新复习一遍吗？')){
+      masteredChars[isl.id]=[];
+      save();
+      remaining = isl.data.slice();
+    }else{
+      return;
+    }
+  }
+
+  islandQueue = remaining.slice().sort(function(){return Math.random()-0.5;});
   islandIndex=0;
   wrongQueue=[];
   mapScreen.classList.add('hidden');
@@ -622,7 +628,6 @@ function startIsland(isl){
   loadQuestion();
 }
 
-/* 更新进度条 */
 function updateProgress(){
   var total=islandQueue.length;
   var done=islandIndex;
@@ -631,7 +636,6 @@ function updateProgress(){
   progressText.textContent=done+' / '+total;
 }
 
-/* 出题 */
 function loadQuestion(){
   answered=false;
   hasReadSelf=false;
@@ -667,7 +671,6 @@ function loadQuestion(){
   feedbackEl.style.color='#7b4a2e';
 }
 
-/* 我读对了 */
 iKnowBtn.onclick=function(){
   if(hasReadSelf||answered) return;
   hasReadSelf=true;
@@ -678,10 +681,11 @@ iKnowBtn.onclick=function(){
   beep('coin');
 };
 
-/* 选词语 */
 function chooseWord(word,btn){
   if(answered) return;
   answered=true;
+
+  speak(word);
 
   var all=wordOptionsEl.querySelectorAll('.word-btn');
   var ok=(word===currentQ.word);
@@ -695,6 +699,13 @@ function chooseWord(word,btn){
     scoreEl.textContent=score;
     coinsEl.textContent=coins;
     comboEl.textContent=combo;
+
+    // ★ 答对：加入已掌握
+    if(!masteredChars[currentIsland.id]) masteredChars[currentIsland.id]=[];
+    if(masteredChars[currentIsland.id].indexOf(currentQ.char)===-1){
+      masteredChars[currentIsland.id].push(currentQ.char);
+    }
+    save();
 
     if(combo>=3){
       comboPop.textContent='🔥 连击 x'+combo+'！';
@@ -712,7 +723,7 @@ function chooseWord(word,btn){
     pandaFace.classList.add('happy');
     setTimeout(function(){pandaFace.classList.remove('happy');},500);
     beep('ok');
-    setTimeout(function(){speak(currentQ.char);},200);
+    setTimeout(function(){speak(currentQ.char);},900);
   }else{
     combo=0;
     comboEl.textContent=0;
@@ -725,7 +736,8 @@ function chooseWord(word,btn){
     setTimeout(function(){pandaFace.classList.remove('sad');},400);
     beep('no');
     wrongQueue.push(currentQ);
-    setTimeout(function(){speak(currentQ.char);},200);
+    // ★ 答错：不加入已掌握（下次还会出现）
+    setTimeout(function(){speak(currentQ.char);},900);
   }
 
   for(var i=0;i<all.length;i++){
@@ -737,7 +749,6 @@ function chooseWord(word,btn){
   updateProgress();
 }
 
-/* 下一题 */
 nextBtn.onclick=function(){
   if(!answered) return;
   islandIndex++;
@@ -747,20 +758,16 @@ nextBtn.onclick=function(){
 
 speakBtn.onclick=function(){ if(currentQ) speak(currentQ.char); };
 
-/* 完成一个岛 */
 function finishIsland(){
-  // 计算星星：答对率
   var total=islandQueue.length;
   var wrongCount=wrongQueue.length;
-  var correctRate=(total-wrongCount)/total;
+  var correctRate= total? (total-wrongCount)/total : 1;
   var stars=correctRate>=0.9?3:(correctRate>=0.7?2:1);
 
-  // 记录最高
   if(!islandStars[currentIsland.id] || stars>islandStars[currentIsland.id]){
     islandStars[currentIsland.id]=stars;
   }
 
-  // 解锁下一个岛
   var nextId=currentIsland.id+1;
   if(nextId<islands.length && unlockedIslands.indexOf(nextId)===-1){
     unlockedIslands.push(nextId);
@@ -769,7 +776,6 @@ function finishIsland(){
   if(score>best){best=score;}
   save();
 
-  // 弹窗
   var starStr='';
   for(var s=0;s<3;s++) starStr += (s<stars?'⭐':'☆');
   $('modalEmoji').textContent = stars===3?'🏆':(stars===2?'🎉':'💪');
@@ -782,7 +788,6 @@ function finishIsland(){
   modalMask.classList.add('show');
 }
 
-/* 弹窗按钮 */
 $('modalBtn').onclick=function(){
   modalMask.classList.remove('show');
   gameScreen.classList.remove('active');
@@ -790,14 +795,13 @@ $('modalBtn').onclick=function(){
   renderMap();
 };
 
-/* 返回地图 */
 $('backBtn').onclick=function(){
+  // ★ 返回地图时已自动保存（答对时保存了），无需额外操作
   gameScreen.classList.remove('active');
   mapScreen.classList.remove('hidden');
   renderMap();
 };
 
-/* 启动 */
 renderMap();
 </script>
 </body>
